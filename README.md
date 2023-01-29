@@ -11,6 +11,7 @@ config.json: **按例子将图片信息写入，图片与脚本在同一目录�
 tokens.txt Example:
 
 ```
+2
 abc
 bdf
 ```
