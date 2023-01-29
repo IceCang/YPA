@@ -79,7 +79,7 @@ class Worker:
         self.id = id
         self.startSec = 0
         self.running = False
-        self.ws = websocket.WebSocketApp('wss://paint.d0j1a1701.cc/api/ws',
+        self.ws = websocket.WebSocketApp('wss://paint.yurzhang.cc/ws',
                                          on_open=self.on_open, on_message=self.on_message, on_error=self.on_error)
         if self.main:
             mainWorker = self
