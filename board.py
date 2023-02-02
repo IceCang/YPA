@@ -97,7 +97,7 @@ class Worker:
                 if cnt == 0:
                     put_board(ws, 999, 599, (0, 0, 0))
                     log(0, self.id, "Paint %d %d (%d, %d, %d) for lock" % (999, 599, 0, 0, 0))
-                    time.sleep(0.5)
+                    time.sleep(0.1)
                     continue
                 poi = paintQueue[0]
                 paintQueue.remove(paintQueue[0])
