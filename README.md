@@ -3,7 +3,7 @@ Yur PaintBoard AutoPaint Tool!
 
 ## Usage:
 
-tokens.txt: **将 Token 一行一个放进去。**
+tokens.txt: **第一行一个数字 n 代表 token 个数，第二行起将 Token 一行一个放进去。**
 
 config.json: **按例子将图片信息写入，图片与脚本在同一目录下。**
 
