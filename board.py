@@ -108,16 +108,15 @@ class Worker:
                                                                                    board[poi[0]][poi[1]][0],
                                                                                    board[poi[0]][poi[1]][0], poi[2][0],
                                                                                    poi[2][1], poi[2][2], poi[3]))
-                time.sleep(0.5)
+                time.sleep(0.1)
             except IndexError:
                 continue
 
     def on_open(self, ws: websocket.WebSocketApp):
-        hex_token = self.token.replace('-', '')
         l = [255]
-        for i in range(16):
-            sl = hex_token[(i * 2):(i * 2 + 2)]
-            l.append(int(sl, 16))
+        for i in range(len(self.token)):
+            sl = self.token[i]
+            l.append(ord(sl))
         log(1, self.id, "SEND")
         ws.send(bytes(l), websocket.ABNF.OPCODE_BINARY)
 
