@@ -13,6 +13,7 @@ headers = {"Content-Type": "application/json",
                          ".0.0 Safari/537.36"}
 
 board = []
+goal = []
 updates = []  # For surface
 tokensAvailable = 0
 
@@ -24,11 +25,13 @@ SCREEN.fill((255, 255, 255))
 
 def fill_board():
     global board
+    global goal
     for i in range(1000):
         l = []
         for j in range(600):
             l.append(0)
         board.append(l)
+        goal.append(l)
 
 
 def set_board(bd):
@@ -53,7 +56,11 @@ def put_board(ws: websocket.WebSocketApp, x, y, c):
     msg += bytes([x % 256, x // 256 % 256])
     msg += bytes([y % 256, y // 256 % 256])
     msg += bytes(c)
-    ws.send(msg, websocket.ABNF.OPCODE_BINARY)
+    try:
+        ws.send(msg, websocket.ABNF.OPCODE_BINARY)
+    except:
+        return False
+    return True
 
 
 mainWorker = None
@@ -102,7 +109,16 @@ class Worker:
                 poi = paintQueue[0]
                 paintQueue.remove(paintQueue[0])
                 cnt -= 1
-                put_board(ws, poi[0], poi[1], poi[2])
+                if put_board(ws, poi[0], poi[1], poi[2]) is not True:
+                    log(2, self.id, "Websocket Error. Reconnecting...")
+                    self.ws = websocket.WebSocketApp('wss://paint.yurzhang.com/ws',
+                                                     on_open=self.on_open, on_message=self.on_message,
+                                                     on_error=self.on_error)
+                    self.ws.run_forever()
+                    log(0, self.id, "Reconnected!")
+                    continue
+
+
                 log(0, self.id, "Paint %d %d (%d %d %d) -> (%d, %d, %d) for %s" % (poi[0], poi[1],
                                                                                    board[poi[0]][poi[1]][0],
                                                                                    board[poi[0]][poi[1]][0],
@@ -129,6 +145,7 @@ class Worker:
             set_board(boarda)
             log(0, self.id, "Done " + '(' + str(time.time() - self.startSec) + 's)')
             if not self.running:
+                make_goal()
                 t3 = threading.Thread(target=self.paint, args=(ws,), daemon=True)
                 t4 = threading.Thread(target=run, args=(ws,), daemon=True)
                 t3.start()
@@ -183,31 +200,43 @@ mods = 2.5
 isShuffle = True
 
 
+def make_goal():
+    global imgs
+    global imgConfig
+    global goal
+    cnta = -1
+    try:
+        for _ in imgConfig['images']:
+            imgs.append(Image.open(item['path']))
+        for _item in imgConfig['images']:
+            cnta += 1
+            for _i in range(imgs[cnta].size[0]):
+                for _j in range(imgs[cnta].size[1]):
+                    goal[item['x'] + _i][item['y'] + _j] = imgs[cnta].getpixel((_i, _j))
+    except:
+        log(2, 1, "Failed to load images. Exiting...")
+        sys.exit(0)
+
+
 def run(ws: websocket.WebSocketApp):
     global cnt
     global lock
     global paintQueue
-    global imgs
-    global imgConfig
     try:
-        for item in imgConfig['images']:
-            imgs.append(Image.open(item['path']))
         while True:
             cache = []
             cachecnt = 0
-            cnta = -1
-            for item in imgConfig['images']:
-                cnta += 1
-                for i in range(imgs[cnta].size[0]):
-                    for j in range(imgs[cnta].size[1]):
-                        c = imgs[cnta].getpixel((i, j))
-                        try:
-                            if c != board[item['x'] + i][item['y'] + j]:
-                                cachecnt += 1
-                                cache.append((item['x'] + i, item['y'] + j, c, item['path']))
-                        except IndexError:
-                            print(item['x'] + i, item['y'] + j)
-                            sys.exit(0)
+            for i in range(1000):
+                for j in range(600):
+                    try:
+                        if goal[i][j] == 0:
+                            continue
+                        if goal[i][j] != board[i][j]:
+                            cachecnt += 1
+                            cache.append((item['x'] + i, item['y'] + j, c, item['path']))
+                    except IndexError:
+                        print(i, j)
+                        sys.exit(0)
             log(1, 1, "Queue Length: " + str(len(cache)))
             if isShuffle:
                 random.shuffle(cache)
