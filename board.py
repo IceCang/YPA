@@ -7,7 +7,6 @@ import threading
 from PIL import Image
 import random
 # import pygame
-import progress_bar_pb
 
 headers = {"Content-Type": "application/json",
            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0"
@@ -314,12 +313,11 @@ def run():
             if (_correct - correct) / mods == 0:
                 log(1, 1, "[Cycle] Queue Length: %d, Delta: %d, Success: %d, Wrong: %d, Correct: %d, Total: %d, ETC: %d"
                           "s" % (
-                    len(cache), (correct - _correct + paintSuccess) / (mods / 0.1), paintSuccess, cachecnt, _correct +
-                    1224 - pbCnt, total, -1))
+                    len(cache), (correct - _correct + paintSuccess) / (mods / 0.1), paintSuccess, cachecnt, _correct, total, -1))
             else:
                 log(1, 1, "[Cycle] Queue Length: %d, Delta: %d, Success: %d, Wrong: %d, Correct: %d, Total: %d, ETC: %d"
                           "s" % (len(cache), (correct - _correct + paintSuccess) / (mods / 0.1), paintSuccess,
-                                 cachecnt, _correct + 1224 - pbCnt, total, cachecnt /
+                                 cachecnt, _correct, total, cachecnt /
                                  ((_correct - correct) / mods)))
             paintQueue = cache
             cnt = cachecnt
